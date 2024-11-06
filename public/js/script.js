@@ -17,36 +17,98 @@ document.addEventListener('DOMContentLoaded', function() {
   // Service Selection Page Scripts
   const serviceSelectionForm = document.getElementById('serviceSelectionForm');
   if (serviceSelectionForm) {
+    const { DateTime } = luxon; // Import luxon for date handling
     const dateList = document.querySelector('.date-list');
     const prevButton = document.querySelector('[data-prev-button]');
     const nextButton = document.querySelector('.date-nav.next');
     const selectedTimesContainer = document.getElementById('selectedTimes');
+    const timezoneSelect = document.getElementById('timezone-select');
+
     let currentWeekStart = new Date();
     currentWeekStart.setDate(currentWeekStart.getDate() - currentWeekStart.getDay() + 1); // Start from Monday
     let selectedDate = null;
+    let userTimezone = 'America/Chicago'; // Default to Central Time
     const selectedTimes = [];
+
+    // Simplified timezone list
+    const simplifiedTimezones = [
+      { value: 'America/Chicago', label: 'Central Time (Chicago)' },
+      { value: 'America/New_York', label: 'Eastern Time (New York)' },
+      { value: 'America/Los_Angeles', label: 'Pacific Time (Los Angeles)' },
+      { value: 'America/Denver', label: 'Mountain Time (Denver)' },
+      { value: 'America/Anchorage', label: 'Alaska Time (Anchorage)' },
+      { value: 'Pacific/Honolulu', label: 'Hawaii-Aleutian Time (Honolulu)' },
+      { value: 'America/Toronto', label: 'Eastern Time (Toronto)' },
+      { value: 'Europe/London', label: 'GMT (London)' },
+      { value: 'Europe/Berlin', label: 'CET (Berlin)' },
+      { value: 'Asia/Tokyo', label: 'JST (Tokyo)' },
+      // Add more as needed
+    ];
+
+    // Populate timezone select
+    function populateTimezoneSelect() {
+      simplifiedTimezones.forEach(tz => {
+        const option = document.createElement('option');
+        option.value = tz.value;
+        option.textContent = tz.label;
+        if (tz.value === userTimezone) {
+          option.selected = true;
+        }
+        timezoneSelect.appendChild(option);
+      });
+    }
+
+    populateTimezoneSelect();
+
+    timezoneSelect.addEventListener('change', function() {
+      userTimezone = this.value;
+      updateDateItems(currentWeekStart);
+    });
 
     function updateDateItems(startDate) {
       dateList.innerHTML = '';
       const days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
-      const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
       
       for (let i = 0; i < 7; i++) {
         const date = new Date(startDate);
         date.setDate(startDate.getDate() + i);
-        if (date.getDay() !== 0 && date.getDay() !== 6) { // Exclude weekends
-          const dateItem = document.createElement('div');
-          dateItem.classList.add('date-item');
-          dateItem.dataset.date = date.toISOString().split('T')[0];
-          dateItem.innerHTML = `
-            <span class="day">${days[date.getDay()]}</span>
-            <span class="date">${date.getDate()}</span>
-            <span class="month">${months[date.getMonth()]}</span>
-          `;
-          dateList.appendChild(dateItem);
+        
+        // Exclude weekends
+        if (date.getDay() === 0 || date.getDay() === 6) continue;
+
+        const dateItem = document.createElement('div');
+        dateItem.classList.add('date-item');
+        dateItem.dataset.date = date.toISOString().split('T')[0];
+
+        // Check if the date is in the past
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+        
+        if (date < today) {
+          dateItem.classList.add('disabled'); // Grey out past dates
+          dateItem.style.pointerEvents = "none"; // Prevent selection
         }
+
+        const centralDate = DateTime.fromJSDate(date).setZone('America/Chicago');
+        const userDate = DateTime.fromJSDate(date).setZone(userTimezone);
+
+        dateItem.innerHTML = `
+          <span class="day">${userDate.toFormat('ccc')}</span>
+          <span class="date">${userDate.toFormat('d')}</span>
+          <span class="month">${userDate.toFormat('LLL')}</span>
+          <span class="timezone-info">
+            ${centralDate.toFormat('t')} CT / ${userDate.toFormat('t')} ${userDate.toFormat('ZZZZ')}
+          </span>
+        `;
+
+        // Check if this date is today
+        if (date.toISOString().split('T')[0] === today.toISOString().split('T')[0]) {
+          dateItem.classList.add('current-date'); // Add a class for today's date
+        }
+
+        dateList.appendChild(dateItem);
       }
-      
+
       addDateItemListeners();
       updateNavigationButtons();
     }
@@ -55,10 +117,13 @@ document.addEventListener('DOMContentLoaded', function() {
       const dateItems = document.querySelectorAll('.date-item');
       dateItems.forEach(item => {
         item.addEventListener('click', function() {
-          dateItems.forEach(di => di.classList.remove('selected'));
-          this.classList.add('selected');
-          selectedDate = this.dataset.date;
-          updateSelectedTimes();
+          if (!this.classList.contains('disabled')) { // Prevent selection of disabled dates
+            dateItems.forEach(di => di.classList.remove('selected'));
+            this.classList.add('selected');
+            selectedDate = this.dataset.date;
+            updateTimeSlotState(); // Update time slot state based on selected date
+            updateSelectedTimes();
+          }
         });
       });
     }
@@ -88,11 +153,25 @@ document.addEventListener('DOMContentLoaded', function() {
       updateDateItems(currentWeekStart);
     });
 
+    function updateTimeSlotState() {
+      timeSlots.forEach(slot => {
+        if (selectedDate) {
+          slot.disabled = false;
+          slot.classList.remove('disabled');
+        } else {
+          slot.disabled = true;
+          slot.classList.add('disabled');
+          slot.classList.remove('selected');
+        }
+      });
+    }
+
     updateDateItems(currentWeekStart);
 
     const timeSlots = document.querySelectorAll('.time-slot');
     timeSlots.forEach(slot => {
       slot.addEventListener('click', function() {
+        if (!selectedDate) return; // Ignore clicks if no date is selected
         this.classList.toggle('selected');
         updateSelectedTimes();
       });
@@ -102,55 +181,65 @@ document.addEventListener('DOMContentLoaded', function() {
       selectedTimes.length = 0; // Clear the array
       if (selectedDate) {
         const selectedSlots = document.querySelectorAll('.time-slot.selected');
+
         selectedSlots.forEach(slot => {
           const time = slot.dataset.time;
-          selectedTimes.push(`${selectedDate} ${time}`);
+
+          // Create a DateTime object in Central Time and convert it to user's timezone
+          const dateTimeCentral = DateTime.fromISO(`${selectedDate}T${time}`, { zone: 'America/Chicago' });
+          const userTimeZoneTime = dateTimeCentral.setZone(userTimezone);
+
+          selectedTimes.push({
+            central: `${dateTimeCentral.toFormat("MMM d, yyyy")} ${dateTimeCentral.toFormat("t")}`, // Format as "Nov 7, 2024"
+            user: `${userTimeZoneTime.toFormat("MMM d, yyyy")} ${userTimeZoneTime.toFormat("t")}`
+          });
         });
-      }
 
-      selectedTimesContainer.innerHTML = '';
-      selectedTimes.forEach(time => {
-        const [date, slotTime] = time.split(' ');
-        const formattedDate = new Date(date).toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' });
-        const tag = document.createElement('span');
-        tag.classList.add('selected-time-tag');
-        tag.innerHTML = `${formattedDate} ${slotTime} <button class="remove-time" data-time="${time}">&times;</button>`;
-        selectedTimesContainer.appendChild(tag);
-      });
-    }
+        selectedTimesContainer.innerHTML = '';
 
-    selectedTimesContainer.addEventListener('click', function(e) {
-      if (e.target.classList.contains('remove-time')) {
-        const time = e.target.dataset.time;
-        const index = selectedTimes.indexOf(time);
-        if (index > -1) {
-          selectedTimes.splice(index, 1);
-        }
-        const [date, slotTime] = time.split(' ');
-        const slot = document.querySelector(`.time-slot[data-time="${slotTime}"]`);
-        if (slot) slot.classList.remove('selected');
-        updateSelectedTimes();
-      }
-    });
+        selectedTimes.forEach(time => {
+          const tag = document.createElement('span');
+          tag.classList.add('selected-time-tag');
 
-    // Form submission
-    serviceSelectionForm.addEventListener('submit', function(e) {
-      e.preventDefault();
-      const formData = new FormData(this);
-      const formObject = {};
-      formData.forEach((value, key) => {
-        if (formObject[key]) {
-          if (!Array.isArray(formObject[key])) {
-            formObject[key] = [formObject[key]];
-          }
-          formObject[key].push(value);
-        } else {
-          formObject[key] = value;
-        }
-      });
-      formObject.selectedTimes = selectedTimes; // Add selected times to form data
-      console.log('Form Submission Data:', formObject);
-      alert('Form submitted! Check the console for the submitted data.');
-    });
-  }
+          // Show the appointment time and conditionally show the date based on timezone
+          tag.innerHTML = `
+            ${userTimezone !== 'America/Chicago' ? time.central + " CT / " : ""}${time.user} ${userTimezone}
+            <button class="remove-time" data-time="${time.central}">&times;</button>
+          `;
+          
+          selectedTimesContainer.appendChild(tag);
+          
+          // Add event listener for removing appointments
+          tag.querySelector('.remove-time').addEventListener('click', function(e) {
+            e.stopPropagation(); // Prevent click event from bubbling up
+            
+            selectedTimes.splice(selectedTimes.findIndex(t => t.central === time.central), 1);
+
+            updateSelectedTimes();
+           });
+         });
+       }
+     
+     }
+
+     // Form submission
+     serviceSelectionForm.addEventListener('submit', function(e) {
+       e.preventDefault();
+       const formData = new FormData(this);
+       const formObject = {};
+       formData.forEach((value, key) => {
+         if (formObject[key]) {
+           if (!Array.isArray(formObject[key])) {
+             formObject[key] = [formObject[key]];
+           }
+           formObject[key].push(value);
+         } else {
+           formObject[key] = value;
+         }
+       });
+       formObject.selectedTimes = selectedTimes; // Add selected times to form data
+       console.log('Form Submission Data:', formObject);
+       alert('Form submitted! Check the console for the submitted data.');
+     });
+   }
 });

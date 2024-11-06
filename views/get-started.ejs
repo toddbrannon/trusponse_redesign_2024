@@ -6,19 +6,30 @@
     <p>Choose the services you're interested in and let us know how we can help you.</p>
 
     <form id="serviceSelectionForm" action="/submit-service-selection" method="POST">
-      <div class="service-options">
+      <div class="service-selection-card">
         <h3>Our Services</h3>
         <div class="checkbox-group">
-          <label><input type="checkbox" name="services" value="dataManagement"> Data Management & Analysis</label>
-          <label><input type="checkbox" name="services" value="webDevelopment"> Web Development</label>
-          <label><input type="checkbox" name="services" value="aiAutomation"> AI Automation</label>
-          <label><input type="checkbox" name="services" value="businessIntelligence"> Business Intelligence</label>
-          <label><input type="checkbox" name="services" value="mobileAppDevelopment"> Mobile App Development</label>
-          <label><input type="checkbox" name="services" value="cybersecurity"> Cybersecurity</label>
-          <label><input type="checkbox" name="services" value="chatbots"> Chatbots & Virtual Assistants</label>
-          <label><input type="checkbox" name="services" value="customSoftware"> Custom Software Solutions</label>
+          <% 
+          const services = [
+            { value: 'dataManagement', label: 'Data Management & Analysis' },
+            { value: 'webDevelopment', label: 'Web Development' },
+            { value: 'aiAutomation', label: 'AI Automation' },
+            { value: 'businessIntelligence', label: 'Business Intelligence' },
+            { value: 'mobileAppDevelopment', label: 'Mobile App Development' },
+            { value: 'cybersecurity', label: 'Cybersecurity' },
+            { value: 'chatbots', label: 'Chatbots & Virtual Assistants' },
+            { value: 'customSoftware', label: 'Custom Software Solutions' }
+          ];
+          services.forEach(service => { 
+          %>
+            <div class="service-card">
+              <label>
+                <input type="checkbox" name="services" value="<%= service.value %>"> 
+                <span><%= service.label %></span>
+              </label>
+            </div>
+          <% }); %>
         </div>
-      </div>
 
       <div class="contact-info">
         <h3>Contact Information</h3>
@@ -32,6 +43,12 @@
         <h3>Preferred Contact Times</h3>
         <p>Select up to four time slots when we can reach you:</p>
         <div class="time-selector">
+          <div class="timezone-selector">
+            <label for="timezone-select">Your Timezone:</label>
+            <select id="timezone-select">
+              <!-- We'll populate this with JavaScript -->
+            </select>
+          </div>
           <div class="date-picker">
             <button type="button" class="date-nav prev" data-prev-button>&lt;</button>
             <div class="date-list">
@@ -63,9 +80,13 @@
               '13:00', '14:00', '15:00', '16:00', '17:00', '18:00'
             ];
             timeSlots.forEach(time => { 
+              // Convert to AM/PM format
+              const [hour, minute] = time.split(':');
+              const ampm = hour >= 12 ? 'PM' : 'AM';
+              const displayHour = hour % 12 || 12; // Convert to 12-hour format
             %>
               <button type="button" class="time-slot" data-time="<%= time %>">
-                <%= time %>
+                <%= displayHour %>:<%= minute %> <%= ampm %>
               </button>
             <% }); %>
           </div>
