@@ -14,6 +14,15 @@ app.get('/', (req, res) => {
   res.render('index', { title: 'Trusponse - AI-Powered Business Solutions' });
 });
 
+app.get('/get-started', (req, res) => {
+  res.render('get-started', { title: 'Get Started - TruSponse' });
+});
+
+app.post('/submit-service-selection', (req, res) => {
+  console.log('Form Submission Data:', req.body);
+  res.send('Form submitted successfully!');
+});
+
 // Start the server
 app.listen(port, () => {
   console.log(`Server running at http://localhost:${port}`);

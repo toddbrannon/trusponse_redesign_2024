@@ -393,3 +393,183 @@ footer {
       flex-direction: column;
     }
   }
+
+/* Service Selection Page Styles */
+.service-selection-section {
+  padding: 4rem 0;
+  background-color: #f8f9fa;
+}
+
+.service-selection-section h2 {
+  margin-bottom: 1rem;
+}
+
+.service-selection-section form {
+  max-width: 800px;
+  margin: 2rem auto;
+  background-color: #ffffff;
+  padding: 2rem;
+  border-radius: 8px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.service-options, .contact-info, .preferred-contact-times {
+  margin-bottom: 2rem;
+}
+
+.checkbox-group {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 1rem;
+}
+
+.checkbox-group label {
+  display: flex;
+  align-items: center;
+}
+
+.checkbox-group input[type="checkbox"] {
+  margin-right: 0.5rem;
+}
+
+.contact-info input,
+.contact-info textarea {
+  width: 100%;
+  padding: 0.5rem;
+  margin-bottom: 1rem;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+}
+
+.time-selector {
+  max-width: 600px;
+  margin: 2rem auto;
+}
+
+.date-picker {
+  display: flex;
+  align-items: center;
+  margin-bottom: 2rem;
+}
+
+.date-nav {
+  background: none;
+  border: none;
+  font-size: 1.5rem;
+  cursor: pointer;
+  color: #FF6B00;
+}
+
+.date-list {
+  display: flex;
+  overflow-x: auto;
+  scroll-behavior: smooth;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+.date-list::-webkit-scrollbar {
+  display: none;
+}
+
+.date-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 0.5rem 1rem;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.date-item.selected, .time-slot.selected {
+  background-color: #FF6B00;
+  color: white;
+}
+
+.date-item:hover, .date-item.selected {
+  background-color: #FF6B00;
+  color: white;
+}
+
+.date-item .day {
+  font-size: 0.8rem;
+  font-weight: bold;
+}
+
+.date-item .date {
+  font-size: 1.2rem;
+  font-weight: bold;
+}
+
+.date-item .month {
+  font-size: 0.8rem;
+}
+
+.time-slot {
+  padding: 0.75rem;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  background-color: #f8f9fa;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.time-slot:hover, .time-slot.selected {
+  background-color: #FF6B00;
+  color: white;
+  border-color: #FF6B00;
+}
+
+.selected-times {
+  margin-top: 2rem;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.selected-time-tag {
+  display: flex;
+  align-items: center;
+  padding: 0.5rem 1rem;
+  background-color: #FF6B00;
+  color: white;
+  border-radius: 20px;
+  font-size: 0.9rem;
+}
+
+.selected-time-tag button {
+  background: none;
+  border: none;
+  color: white;
+  margin-left: 0.5rem;
+  cursor: pointer;
+  font-size: 1.2rem;
+}
+
+.submit-button {
+  background-color: #FF6B00;
+  color: #ffffff;
+  border: none;
+  padding: 0.75rem 1.5rem;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.submit-button:hover {
+  background-color: #e55d00;
+}
+
+@media (max-width: 768px) {
+  .time-slots {
+    grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
+  }
+  
+  .time-slot {
+    font-size: 0.9rem;
+  }
+}
+
+/* End of Service Selection Page Styles */
