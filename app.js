@@ -1,5 +1,6 @@
 const express = require('express');
 const path = require('path');
+const { DateTime } = require('luxon'); // Import Luxon for date formatting
 const { GoogleSpreadsheet } = require('google-spreadsheet');
 const { JWT } = require('google-auth-library');
 require('dotenv').config();
@@ -52,7 +53,10 @@ app.post('/submit-service-selection', async (req, res) => {
       message
     } = req.body;
 
-    const timeSubmitted = new Date().toISOString();
+    // Format the current timestamp in Central Time (America/Chicago)
+    const timeSubmitted = DateTime.now()
+      .setZone('America/Chicago')
+      .toFormat("EEEE, MM/dd/yyyy, h:mm a");
     
     const serviceColumns = {
       'dataManagement': 'Data Management & Analysis',
