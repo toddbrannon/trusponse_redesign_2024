@@ -54,14 +54,14 @@ app.post('/submit-service-selection', async (req, res) => {
 
     const timeSubmitted = new Date().toISOString();
     
-    const serviceColumns = [
-      'Data Management & Analysis',
-      'Web Development',
-      'AI Automation & Agents',
-      'Business Intelligence',
-      'Chatbots',
-      'Custom Software Solutions'
-    ];
+    const serviceColumns = {
+      'dataManagement': 'Data Management & Analysis',
+      'webDevelopment': 'Web Development',
+      'aiAutomation': 'AI Automation & Agents',
+      'businessIntelligence': 'Business Intelligence',
+      'chatbots': 'Chatbots',
+      'customSoftware': 'Custom Software Solutions'
+    };
 
     const rowData = {
       'Timestamp': timeSubmitted,
@@ -73,10 +73,9 @@ app.post('/submit-service-selection', async (req, res) => {
       'Message': message
     };
 
-    serviceColumns.forEach(service => {
-      rowData[service] = services && services.includes(service.toLowerCase().replace(/\s+/g, '')) ? 'X' : '';
+    Object.keys(serviceColumns).forEach(key => {
+      rowData[serviceColumns[key]] = services.includes(key) ? 'X' : '';
     });
-
     await sheet.addRow(rowData);
 
     console.log('Form Submission Data:', req.body);
