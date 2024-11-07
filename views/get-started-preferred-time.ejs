@@ -33,12 +33,9 @@
 
       <div class="contact-info">
         <h3>Contact Information</h3>
-        <div class="name-fields">
-          <input type="text" name="firstName" placeholder="Your First Name" required maxlength="50">
-          <input type="text" name="lastName" placeholder="Your Last Name" required maxlength="50">
-        </div>
-        <input type="email" name="email" placeholder="Your Email" required maxlength="100">
-        <input type="tel" name="phone" placeholder="Phone Number" required maxlength="20">
+        <input type="text" name="name" placeholder="Your Name" required>
+        <input type="email" name="email" placeholder="Your Email" required>
+        <input type="tel" name="phone" placeholder="Phone Number">
 
         <div class="preferred-contact-method">
           <p>Preferred contact method:</p>
@@ -46,10 +43,45 @@
           <label><input type="radio" name="contactMethod" value="email"> Email</label>
         </div>
 
-        <textarea name="message" placeholder="Tell us more about your project or needs" maxlength="500"></textarea>
+        <textarea name="message" placeholder="Tell us more about your project or needs"></textarea>
       </div>
 
-      
+      <div class="preferred-contact-times">
+        <h3>Preferred Contact Times</h3>
+        <p>Select up to four time slots when we can reach you:</p>
+        <div class="time-selector">
+          <div class="timezone-selector">
+            <label for="timezone-select">Your Timezone:</label>
+            <select id="timezone-select">
+              <!-- We'll populate this with JavaScript -->
+            </select>
+          </div>
+          <div class="date-picker">
+            <button type="button" class="date-nav prev" data-prev-button>&lt;</button>
+            <div class="date-list">
+              <!-- Date items will be dynamically inserted here -->
+            </div>
+            <button type="button" class="date-nav next">&gt;</button>
+          </div>
+          <div class="time-slots">
+            <% 
+            const timeSlots = [
+              '08:00', '09:00', '10:00', '11:00', '12:00', 
+              '13:00', '14:00', '15:00', '16:00', '17:00', '18:00'
+            ];
+            timeSlots.forEach(time => { 
+              const [hour, minute] = time.split(':');
+              const ampm = hour >= 12 ? 'PM' : 'AM';
+              const displayHour = hour % 12 || 12;
+            %>
+              <button type="button" class="time-slot" data-time="<%= time %>">
+                <%= displayHour %>:<%= minute %> <%= ampm %>
+              </button>
+            <% }); %>
+          </div>
+          <div id="selectedTimes" class="selected-times"></div>
+        </div>
+      </div>
 
       <button type="submit" class="submit-button">Submit</button>
     </form>
